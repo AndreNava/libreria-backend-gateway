@@ -1,24 +1,21 @@
 server:
-  port: 8762
-        
-## Classic Eureka configuration
+  port: ${PORT:8762}  # Puerto configurado mediante variable de entorno
+
+## Configuración de Eureka
 eureka:
   instance:
     preferIpAddress: true
-    hostname: localhost
-    
+    hostname: ${HOSTNAME:localhost}  # Hostname configurado mediante variable de entorno
   client:
     registerWithEureka: true
     fetchRegistry: true
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka
-      
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}  # URL de Eureka configurada mediante variable de entorno
 
-## Enable service discovery (with Eureka)
-## lower-case-service-id is mandatory, otherwise is retrieved in upper case from Eureka
+## Configuración de Spring Cloud Gateway
 spring:
   application:
-    name: gateway    
+    name: ${APPLICATION_NAME:gateway}  # Nombre de la aplicación configurado mediante variable de entorno
   cloud:
     gateway:
       discovery:
@@ -27,27 +24,26 @@ spring:
           lower-case-service-id: true
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
-      globalcors: ## CORS Configuration
+      globalcors:
         cors-configurations:
-          '[/**]': ## For all routes
-            allowed-origins: "${ALLOWED_ORIGINS:*}" # With '*' we allow all origins. We can restrict by indicating domains or ip + port, e.g. http://localhost:3000 (where our front is, or a Vercel domain)
-            allowed-headers: "*" ## All headers allowed
+          '[/**]':
+            allowed-origins: "${ALLOWED_ORIGINS:*}"  # Orígenes permitidos configurados mediante variable de entorno
+            allowed-headers: "*"
             allowed-methods:
               - GET
               - POST
               - PUT
               - PATCH
-      
 
-## We enable the Actuator API to be able to access <<host>>/actuator/gateway/routes
-## We expose the routings that have been automatically detected (all)
-## Depending on the ROUTE_TABLES_ENABLED environment variable (true by default)
+## Configuración de Actuator
 management:
   endpoint:
-    gateway:  
+    gateway:
       enabled: ${ROUTE_TABLES_ENABLED:true}
   endpoints:
     web:
       exposure:
         include:
-          - '*'
+          - health
+          - info
+          - gateway
